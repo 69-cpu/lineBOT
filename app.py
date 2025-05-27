@@ -21,34 +21,6 @@ from linebot.v3.webhooks import (
 import sqlite3
 import os
 
-DB_FILE = 'poop_count.db'
-
-app = Flask(__name__)
-
-configuration = Configuration(access_token = 'dqDsuZty5lQq2uM2ULC8SCv2UjQ+7wuImSSJUzgEz9jSp7IY7vYT8SB0EOCN+mV13VdMm44bkeYO/OExQllsLbYpCvTETVCr4dkOcxEV+oS7d6GCmXP6GW102lkTuJYb/zwdqFqx82sBjl2yzsm87gdB04t89/1O/w1cDnyilFU=')
-line_handler = WebhookHandler('fbf2fcbc6412b8ed37b3ea35fbb913b0')
-
-
-@app.route("/callback", methods=['POST'])
-def callback():
-    # get X-Line-Signature header value
-    signature = request.headers['X-Line-Signature']
-
-    # get request body as text
-    body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
-
-    # handle webhook body
-    try:
-        line_handler.handle(body, signature)
-    except InvalidSignatureError:
-        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
-        abort(400)
-
-    return 'OK'
-
-@line_handler.add(MessageEvent, message=TextMessageContent)
-
 # 初始化資料庫
 def init_db():
     conn = sqlite3.connect(DB_FILE)
@@ -112,6 +84,35 @@ def get_top_poop_ranking(chat_id, limit=5):
     conn.close()
     return results
 
+
+
+DB_FILE = 'poop_count.db'
+
+app = Flask(__name__)
+
+configuration = Configuration(access_token = 'dqDsuZty5lQq2uM2ULC8SCv2UjQ+7wuImSSJUzgEz9jSp7IY7vYT8SB0EOCN+mV13VdMm44bkeYO/OExQllsLbYpCvTETVCr4dkOcxEV+oS7d6GCmXP6GW102lkTuJYb/zwdqFqx82sBjl2yzsm87gdB04t89/1O/w1cDnyilFU=')
+line_handler = WebhookHandler('fbf2fcbc6412b8ed37b3ea35fbb913b0')
+
+
+@app.route("/callback", methods=['POST'])
+def callback():
+    # get X-Line-Signature header value
+    signature = request.headers['X-Line-Signature']
+
+    # get request body as text
+    body = request.get_data(as_text=True)
+    app.logger.info("Request body: " + body)
+
+    # handle webhook body
+    try:
+        line_handler.handle(body, signature)
+    except InvalidSignatureError:
+        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
+        abort(400)
+
+    return 'OK'
+
+@line_handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_id = event.source.user_id
     message_text = event.message.text.strip()
@@ -153,7 +154,5 @@ def handle_message(event):
                 )
             )
 
-# Flask 的 app
-app = Flask(__name__)
-# 告訴 Vercel：這個就是 Serverless function
-handler = app
+if __name__ == "__main__":
+    app.run()
