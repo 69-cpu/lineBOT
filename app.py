@@ -153,5 +153,7 @@ def handle_message(event):
                 )
             )
 
-if __name__ == "__main__":
-    app.run()
+# Flask 的 app
+app = Flask(__name__)
+# 告訴 Vercel：這個就是 Serverless function
+handler = app
