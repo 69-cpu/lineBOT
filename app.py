@@ -26,33 +26,13 @@ SUPABASE_URL = "https://vunspnkaubvaemlpnqlo.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bnNwbmthdWJ2YWVtbHBucWxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNTcwNzcsImV4cCI6MjA2MzkzMzA3N30.q_qCFYK2OSsEAdKQhbW15IwJNqArv1NiX12nfbIV6bc"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-DB_FILE = '/tmp/poop_count.db'
 app = Flask(__name__)
-
-# 初始化資料庫
-def init_db():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS poop_count (
-            chat_id TEXT,
-            user_id TEXT,
-            count INTEGER,
-            PRIMARY KEY (chat_id, user_id)
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-init_db()
 
 def get_poop_count(chat_id, user_id):
     result = supabase.table("poop_count").select("count").eq("chat_id", chat_id).eq("user_id", user_id).single().execute()
     if result.data:
         return result.data["count"]
     return 0
-
 
 def update_poop_count(chat_id, user_id, increment):
     current = get_poop_count(chat_id, user_id)
