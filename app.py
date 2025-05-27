@@ -146,12 +146,12 @@ def handle_message(event):
                 else:
                     reply_text = f"排第 {rank} 名的，再接再厲 ，總共拉了 {count} 次 💩！"
 
-            line_bot_api.reply_message_with_http_info(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=reply_text)]
-                )
+        line_bot_api.reply_message_with_http_info(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=reply_text)]
             )
+         )
 
 if __name__ == "__main__":
     app.run()
