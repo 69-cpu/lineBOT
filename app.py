@@ -86,7 +86,7 @@ def get_top_poop_ranking(chat_id, limit=5):
 
 
 
-DB_FILE = 'poop_count.db'
+DB_FILE = '/tmp/poop_count.db'
 
 app = Flask(__name__)
 
