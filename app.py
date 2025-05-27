@@ -21,7 +21,7 @@ from linebot.v3.webhooks import (
 import sqlite3
 import os
 
-init_db()
+
 DB_FILE = '/tmp/poop_count.db'
 app = Flask(__name__)
 
@@ -39,6 +39,9 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
+init_db()
+
 def get_poop_count(chat_id, user_id):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
