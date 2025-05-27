@@ -20,7 +20,12 @@ from linebot.v3.webhooks import (
 
 import sqlite3
 import os
+from supabase import create_client
 
+SUPABASE_URL = "https://vunspnkaubvaemlpnqlo.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bnNwbmthdWJ2YWVtbHBucWxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNTcwNzcsImV4cCI6MjA2MzkzMzA3N30.q_qCFYK2OSsEAdKQhbW15IwJNqArv1NiX12nfbIV6bc"
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 DB_FILE = '/tmp/poop_count.db'
 app = Flask(__name__)
@@ -43,51 +48,41 @@ def init_db():
 init_db()
 
 def get_poop_count(chat_id, user_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT count FROM poop_count WHERE chat_id=? AND user_id=?', (chat_id, user_id))
-    row = c.fetchone()
-    conn.close()
-    return row[0] if row else 0
+    result = supabase.table("poop_count").select("count").eq("chat_id", chat_id).eq("user_id", user_id).single().execute()
+    if result.data:
+        return result.data["count"]
+    return 0
+
 
 def update_poop_count(chat_id, user_id, increment):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
     current = get_poop_count(chat_id, user_id)
     new_count = current + increment
-    c.execute('REPLACE INTO poop_count (chat_id, user_id, count) VALUES (?, ?, ?)', (chat_id, user_id, new_count))
-    conn.commit()
-    conn.close()
+    supabase.table("poop_count").upsert({
+        "chat_id": chat_id,
+        "user_id": user_id,
+        "count": new_count
+    }).execute()
     return new_count
 
 def get_user_rank(chat_id, user_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT user_id, count FROM poop_count WHERE chat_id=? ORDER BY count DESC', (chat_id,))
-    results = c.fetchall()
-    conn.close()
+    result = supabase.table("poop_count").select("user_id, count").eq("chat_id", chat_id).order("count", desc=True).execute()
+    data = result.data or []
 
     rank = 1
     last_count = None
-    same_rank_count = 0
 
-    for i, (uid, cnt) in enumerate(results, 1):
-        if cnt != last_count:
+    for i, row in enumerate(data, 1):
+        if row["count"] != last_count:
             rank = i
-            last_count = cnt
-        if uid == user_id:
-            return rank, cnt
+            last_count = row["count"]
+        if row["user_id"] == user_id:
+            return rank, row["count"]
 
     return None, 0
 
 def get_top_poop_ranking(chat_id, limit=5):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT user_id, count FROM poop_count WHERE chat_id=? ORDER BY count DESC LIMIT ?', (chat_id, limit))
-    results = c.fetchall()
-    conn.close()
-    return results
-
+    result = supabase.table("poop_count").select("user_id, count").eq("chat_id", chat_id).order("count", desc=True).limit(limit).execute()
+    return [(row["user_id"], row["count"]) for row in result.data]
 
 configuration = Configuration(access_token = 'dqDsuZty5lQq2uM2ULC8SCv2UjQ+7wuImSSJUzgEz9jSp7IY7vYT8SB0EOCN+mV13VdMm44bkeYO/OExQllsLbYpCvTETVCr4dkOcxEV+oS7d6GCmXP6GW102lkTuJYb/zwdqFqx82sBjl2yzsm87gdB04t89/1O/w1cDnyilFU=')
 line_handler = WebhookHandler('fbf2fcbc6412b8ed37b3ea35fbb913b0')
