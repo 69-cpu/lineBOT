@@ -140,11 +140,11 @@ def handle_message(event):
 
             if rank:
                 if rank == 1:
-                    reply_text = f"你是這個聊天室的 💩王！拉了 {count} 次 💩，穩坐第一名 🏆"
+                    reply_text = f"你是這個聊天室的 💩王！拉了 {count} 次 💩，你是拉屎的神🏆"
                 elif rank == total_people:
                     reply_text = f"你的腸胃要加油啊，第 {rank} 名，只拉了 {count} 次 💩"
                 else:
-                    reply_text = f"排第 {rank} 名的，再接再厲 ，總共拉了 {count} 次 💩！"
+                    reply_text = f"只排第 {rank} 名，再接再厲 ，目前總共拉了 {count} 次 💩，加油！"
 
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
